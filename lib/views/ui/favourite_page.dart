@@ -4,8 +4,10 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:hive/hive.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:online_shop/controllers/favourite_provider.dart';
 import 'package:online_shop/views/mainscreen.dart';
 import 'package:online_shop/views/shared/appstyle.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/constants.dart';
 
@@ -17,30 +19,15 @@ class FavouritePage extends StatefulWidget {
 }
 
 class _FavouritePageState extends State<FavouritePage> {
-  final _fav_box = Hive.box('fav_box');
+  
 
-  deleteFav(int key) async {
-    await _fav_box.delete(key);
-  }
+  
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> _fav = [];
-    final favData = _fav_box.keys.map(
-      (e) {
-        final item = _fav_box.get(e);
-        return {
-          "key": e,
-          "id": item['id'],
-          "name": item['name'],
-          "category": item['category'],
-          "price": item['price'],
-          "imageUrl": item['imageUrl'],
-        };
-      },
-    ).toList();
+    var favouritesNotifier=Provider.of<FavouriteNotifier>(context,listen: true);
+    favouritesNotifier.getAllData();
 
-    _fav = favData.reversed.toList();
 
     return Scaffold(
         body: SizedBox(
@@ -70,10 +57,10 @@ class _FavouritePageState extends State<FavouritePage> {
               Padding(
                 padding: EdgeInsets.all(8),
                 child: ListView.builder(
-                  itemCount: _fav.length,
+                  itemCount:favouritesNotifier.fav.length,
                   padding: EdgeInsets.only(top: 100),
                   itemBuilder: (context, index) {
-                    final shoe = _fav[index];
+                    final shoe = favouritesNotifier.fav[index];
 
                     return Padding(
                       padding: EdgeInsets.all(8),
@@ -155,9 +142,9 @@ class _FavouritePageState extends State<FavouritePage> {
                                   padding: EdgeInsets.all(8),
                                   child: GestureDetector(
                                     onTap: () {
-                                      deleteFav(shoe['key']);
-                                      ids.removeWhere((element) => element == shoe['id']);
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen(),));
+                                     favouritesNotifier.deleteFav(shoe['key']);
+                                    favouritesNotifier.ids.removeWhere((element) => element == shoe['id']);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen(),));
                                     },
                                     child: Icon(Ionicons.heart_dislike),
                                   ),

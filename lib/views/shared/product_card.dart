@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:hive/hive.dart';
+import 'package:online_shop/controllers/favourite_provider.dart';
 import 'package:online_shop/models/constants.dart';
 import 'package:online_shop/views/shared/appstyle.dart';
+import 'package:provider/provider.dart';
 
 import '../ui/favourite_page.dart';
 
@@ -26,30 +28,11 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  final _fav_box = Hive.box('fav_box');
-
-  Future<void> _createFav(Map<String, dynamic> addFav) async {
-    await _fav_box.add(addFav);
-    getFavourites();
-  }
-
-  getFavourites() {
-    final favData = _fav_box.keys.map((key) {
-      final item = _fav_box.get(key);
-      return {
-        "key": key,
-        "id": item["id"],
-      };
-    }).toList();
-
-    favor = favData.toList();
-    ids = favor.map((e) => e['id']).toList();
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
+    var favNotifier = Provider.of<FavouriteNotifier>(context, listen: true);
     bool selected = true;
+    favNotifier.getFavourites();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 20, 0),
@@ -79,27 +62,34 @@ class _ProductCardState extends State<ProductCard> {
                   Positioned(
                     right: 10,
                     top: 10,
-                    child: GestureDetector(
-                      onTap: () async {
-                        if (ids.contains(widget.id)) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) {
-                              return FavouritePage();
-                            },
-                          ));
-                        } else {
-                          _createFav({
-                            "id": widget.id,
-                            "name": widget.name,
-                            "category": widget.category,
-                            "price": widget.price,
-                            "imageUrl": widget.image
-                          });
-                        }
+                    child: Consumer<FavouriteNotifier>(
+                      builder: (_, ref, __) {
+                        return GestureDetector(
+                          onTap: () async {
+                            if (ref.ids.contains(widget.id)) {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) {
+                                  return FavouritePage();
+                                },
+                              ));
+                            } else {
+                              ref.createFav({
+                                "id": widget.id,
+                                "name": widget.name,
+                                "category": widget.category,
+                                "price": widget.price,
+                                "imageUrl": widget.image
+                              });
+                            }
+                            setState(() {
+                              
+                            });
+                          },
+                          child: ref.ids.contains(widget.id)
+                              ? const Icon(MaterialCommunityIcons.heart)
+                              : Icon(MaterialCommunityIcons.heart_outline),
+                        );
                       },
-                      child: ids.contains(widget.id)
-                          ? const Icon(MaterialCommunityIcons.heart)
-                          : Icon(MaterialCommunityIcons.heart_outline),
                     ),
                   ),
                 ],

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:online_shop/controllers/product_provider.dart';
 import 'package:online_shop/models/sneaker_model.dart';
 import 'package:online_shop/services/helper.dart';
 import 'package:online_shop/views/shared/appstyle.dart';
 import 'package:online_shop/views/shared/category_btn.dart';
 import 'package:online_shop/views/shared/custom_spacer.dart';
 import 'package:online_shop/views/shared/latest_shoes.dart';
+import 'package:provider/provider.dart';
 
 class ProductByCat extends StatefulWidget {
   const ProductByCat({super.key, required this.tabIndex});
@@ -21,30 +23,10 @@ class _ProductByCatState extends State<ProductByCat>
   late final TabController _tabController =
       TabController(length: 3, vsync: this);
 
-  late Future<List<Sneakers>> _male;
-  late Future<List<Sneakers>> _female;
-  late Future<List<Sneakers>> _kids;
-
-  void getMale() {
-    _male = Helper().getMaleSneakers();
-  }
-
-  void getFemale() {
-    _female = Helper().getFeMaleSneakers();
-  }
-
-  void getkids() {
-    _kids = Helper().getkidsSneakers();
-  }
-
   @override
   void initState() {
     super.initState();
-     _tabController.animateTo(widget.tabIndex, curve: Curves.easeIn);
-    getMale();
-    getkids();
-   
-    getFemale();
+    _tabController.animateTo(widget.tabIndex, curve: Curves.easeIn);
   }
 
   @override
@@ -62,7 +44,11 @@ class _ProductByCatState extends State<ProductByCat>
 
   @override
   Widget build(BuildContext context) {
-  
+    var productProvider = Provider.of<ProductNotifier>(context);
+
+    productProvider.getMale();
+    productProvider.getFemale();
+    productProvider.getkids();
     return Scaffold(
       backgroundColor: const Color(0xFFE2E2E2),
       body: SizedBox(
@@ -112,7 +98,8 @@ class _ProductByCatState extends State<ProductByCat>
                     controller: _tabController,
                     isScrollable: true,
                     labelColor: Colors.white,
-                    labelStyle: appstyle(size:24,color: Colors.white,fw: FontWeight.bold),
+                    labelStyle: appstyle(
+                        size: 24, color: Colors.white, fw: FontWeight.bold),
                     unselectedLabelColor: Colors.grey.withOpacity(0.3),
                     tabs: const [
                       Tab(
@@ -137,9 +124,9 @@ class _ProductByCatState extends State<ProductByCat>
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(16)),
                 child: TabBarView(controller: _tabController, children: [
-                  latestShoes(male: _male),
-                  latestShoes(male: _female),
-                  latestShoes(male: _kids),
+                  latestShoes(male: productProvider.male),
+                  latestShoes(male: productProvider.female),
+                  latestShoes(male: productProvider.kids),
                 ]),
               ),
             )
@@ -184,12 +171,18 @@ class _ProductByCatState extends State<ProductByCat>
                         const CustomSpacer(),
                         Text(
                           "Filter",
-                          style: appstyle(size:40,color: Colors.black,fw: FontWeight.bold),
+                          style: appstyle(
+                              size: 40,
+                              color: Colors.black,
+                              fw: FontWeight.bold),
                         ),
                         const CustomSpacer(),
                         Text(
                           "Gender",
-                          style: appstyle(size:20,color: Colors.black,fw: FontWeight.bold),
+                          style: appstyle(
+                              size: 20,
+                              color: Colors.black,
+                              fw: FontWeight.bold),
                         ),
                         const SizedBox(
                           height: 20,
@@ -213,7 +206,10 @@ class _ProductByCatState extends State<ProductByCat>
                         const CustomSpacer(),
                         Text(
                           "Category",
-                          style: appstyle(size:20,color: Colors.black,fw: FontWeight.w600),
+                          style: appstyle(
+                              size: 20,
+                              color: Colors.black,
+                              fw: FontWeight.w600),
                         ),
                         const SizedBox(
                           height: 20,
@@ -237,7 +233,10 @@ class _ProductByCatState extends State<ProductByCat>
                         const CustomSpacer(),
                         Text(
                           "Price",
-                          style: appstyle(size:20,color: Colors.black,fw: FontWeight.bold),
+                          style: appstyle(
+                              size: 20,
+                              color: Colors.black,
+                              fw: FontWeight.bold),
                         ),
                         const CustomSpacer(),
                         Slider(
@@ -253,7 +252,10 @@ class _ProductByCatState extends State<ProductByCat>
                         CustomSpacer(),
                         Text(
                           "Brand",
-                          style: appstyle(size:20,color: Colors.black,fw: FontWeight.bold),
+                          style: appstyle(
+                              size: 20,
+                              color: Colors.black,
+                              fw: FontWeight.bold),
                         ),
                         const SizedBox(
                           height: 20,

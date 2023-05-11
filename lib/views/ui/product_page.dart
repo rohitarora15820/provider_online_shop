@@ -7,6 +7,8 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:hive/hive.dart';
+import 'package:online_shop/controllers/cart_provider.dart';
+import 'package:online_shop/controllers/favourite_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:online_shop/controllers/product_provider.dart';
@@ -34,55 +36,29 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   @override
-  void initState() {
-    super.initState();
-    getShoes();
-  }
+
 
   final PageController _pageController = PageController();
 
-  late Future<Sneakers> _sneakers;
-  final cart_Box = Hive.box('cart_box');
-  final _fav_box = Hive.box('fav_box');
 
-  void getShoes() {
-    if (widget.category == "Men's Running") {
-      _sneakers = Helper().getMaleSneakersById(widget.id);
-    } else if (widget.category == "Women's Running") {
-      _sneakers = Helper().getFeMaleSneakersById(widget.id);
-    } else {
-      _sneakers = Helper().getKidsSneakersById(widget.id);
-    }
-  }
 
-  Future<void> _createCart(Map<String, dynamic> newCart) async {
-    await cart_Box.add(newCart);
-  }
+ 
 
-  Future<void> _createFav(Map<String, dynamic> addFav) async {
-    await _fav_box.add(addFav);
-    getFavourites();
-  }
+ 
 
-  getFavourites() {
-    final favData = _fav_box.keys.map((key) {
-      final item = _fav_box.get(key);
-      return {
-        "key": key,
-        "id": item["id"],
-      };
-    }).toList();
 
-    favor = favData.toList();
-    ids = favor.map((e) => e['id']).toList();
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
+      var productProvider=Provider.of<ProductNotifier>(context);
+      productProvider.getShoes(widget.category, widget.id);
+    var cartProvider=Provider.of<CartNotifier>(context);
+
+    var favoriteNotifier=Provider.of<FavouriteNotifier>(context,listen:true);
+   favoriteNotifier.getFavourites();
     return Scaffold(
         body: FutureBuilder<Sneakers>(
-            future: _sneakers,
+            future:productProvider.sneakers,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
@@ -160,33 +136,45 @@ class _ProductPageState extends State<ProductPage> {
                                                     .height *
                                                 0.1,
                                             right: 20,
-                                            child: GestureDetector(
-                                              onTap: () async {
-                                                if (ids.contains(widget.id)) {
-                                                  Navigator.of(context)
-                                                      .push(MaterialPageRoute(
-                                                    builder: (context) {
-                                                      return FavouritePage();
-                                                    },
-                                                  ));
-                                                } else {
-                                                  _createFav({
-                                                    "id": sneaker.id,
-                                                    "name": sneaker.name,
-                                                    "category":
-                                                        sneaker.category,
-                                                    "price": sneaker.price,
-                                                    "imageUrl":
-                                                        sneaker.imageUrl[0]
-                                                  });
-                                                }
+                                            child: Consumer<FavouriteNotifier>(
+                                              builder: (context, favouriteNotifier,child) {
+                                                return GestureDetector(
+                                                  onTap: () async {
+                                                    if (
+                                                      favouriteNotifier.
+                                                      ids
+                                                        .contains(widget.id)) {
+                                                      Navigator.of(context)
+                                                          .push(
+                                                              MaterialPageRoute(
+                                                        builder: (context) {
+                                                          return FavouritePage();
+                                                        },
+                                                      ));
+                                                    } else {
+                                                      favoriteNotifier.createFav({
+                                                        "id": sneaker.id,
+                                                        "name": sneaker.name,
+                                                        "category":
+                                                            sneaker.category,
+                                                        "price": sneaker.price,
+                                                        "imageUrl":
+                                                            sneaker.imageUrl[0]
+                                                      });
+                                                    }
+                                                    setState(() {
+                                                      
+                                                    });
+
+                                                  },
+                                                  child: favouriteNotifier.ids.contains(widget.id)
+                                                      ? Icon(AntDesign.heart)
+                                                      : const Icon(
+                                                          AntDesign.hearto,
+                                                          color: Colors.grey,
+                                                        ),
+                                                );
                                               },
-                                              child: ids.contains(widget.id)
-                                                  ? Icon(AntDesign.heart)
-                                                  : const Icon(
-                                                      AntDesign.hearto,
-                                                      color: Colors.grey,
-                                                    ),
                                             )),
                                         Positioned(
                                           bottom: 0,
@@ -471,13 +459,13 @@ class _ProductPageState extends State<ProductPage> {
                                               child: CheckoutButton(
                                                 label: "Add to Cart",
                                                 onTap: () async {
-                                                  _createCart({
+                                               productProvider.createCart({
                                                     "id": sneaker.id,
                                                     "name": sneaker.name,
                                                     "category":
                                                         sneaker.category,
                                                     "sizes":
-                                                        productNotifier.sizes,
+                                                        productNotifier.sizes[0],
                                                     "imageUrl":
                                                         sneaker.imageUrl[0],
                                                     "price": sneaker.price,
