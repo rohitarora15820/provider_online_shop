@@ -5,7 +5,9 @@ TextStyle appstyle({required double size,required Color color,required FontWeigh
   return GoogleFonts.poppins(
     fontSize: size,
     fontWeight: fw,
-    color: color
+    color: color,
+    textStyle: TextStyle(overflow:TextOverflow.ellipsis )
+    
   );
 }
 

@@ -1,7 +1,8 @@
 
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+
 import 'package:online_shop/controllers/mainscreen_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -41,7 +42,7 @@ class BottonNavBar extends StatelessWidget {
               },
             ),
             BottomNavWidget(
-               icon:mainScreenNotifier.pageIndex==2? Ionicons.add:Ionicons.add_outline,
+               icon:mainScreenNotifier.pageIndex==2? Ionicons.heart:MaterialCommunityIcons.heart_circle_outline,
               onTap: () {
                 mainScreenNotifier.pageIndex=2;
               },
